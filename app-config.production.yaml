@@ -27,6 +27,10 @@ backend:
 auth:
   providers:
     guest: null
+    holosProxy:
+      issuer: https://login.holos.run
+      audience: "269746002573969304"
+      oidcIdTokenHeader: "x-oidc-id-token"
 
 catalog:
   # Overrides the default list locations from app-config.yaml as these contain example data.
