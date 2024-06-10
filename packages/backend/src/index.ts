@@ -17,7 +17,7 @@ backend.add(import('@backstage/plugin-techdocs-backend/alpha'));
 
 // auth plugin
 backend.add(import('@backstage/plugin-auth-backend'));
-backend.add(import('@internal/plugin-auth-backend-module-holos-proxy-provider'));
+backend.add(import('@internal/backstage-plugin-auth-backend-module-holos-proxy-provider'));
 
 // catalog plugin
 backend.add(import('@backstage/plugin-catalog-backend/alpha'));
