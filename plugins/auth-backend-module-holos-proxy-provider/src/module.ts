@@ -3,14 +3,35 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 
+import {
+  authProvidersExtensionPoint,
+  commonSignInResolvers,
+  createProxyAuthProviderFactory,
+} from '@backstage/plugin-auth-node';
+import { oidcProxyAuthenticator } from './authenticator';
+import { oidcProxySignInResolvers } from './resolvers';
+
 export const authModuleHolosProxyProvider = createBackendModule({
   pluginId: 'auth',
   moduleId: 'holos-proxy-provider',
   register(reg) {
     reg.registerInit({
-      deps: { logger: coreServices.logger },
-      async init({ logger }) {
-        logger.info('Hello World!');
+      deps: {
+        logger: coreServices.logger,
+        providers: authProvidersExtensionPoint,
+      },
+      async init({ logger, providers }) {
+        providers.registerProvider({
+          providerId: 'holosProxy',
+          factory: createProxyAuthProviderFactory({
+            authenticator: oidcProxyAuthenticator,
+            signInResolverFactories: {
+              ...oidcProxySignInResolvers,
+              ...commonSignInResolvers,
+            },
+          }),
+        });
+        logger.info('auth backend-module holos-proxy-provider loaded');
       },
     });
   },
