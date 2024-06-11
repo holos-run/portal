@@ -35,10 +35,6 @@ auth:
   environment: production
   providers:
     guest: null
-    # oauth2Proxy:
-    #   signIn:
-    #     resolvers:
-    #       - resolver: emailMatchingUserEntityProfileEmail
     holosProxy:
       issuer: https://login.holos.run
       audience: "269746002573969304"
