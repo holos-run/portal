@@ -24,6 +24,13 @@ backend:
       ssl:
         ca: ${PGBOUNCER_CA_ROOT}
 
+  reading:
+    allow:
+      - host: 'holos.run'
+      - host: '*.holos.run'
+      - host: 'openinfrastructure.co'
+      - host: '*.openinfrastructure.co'
+
 auth:
   environment: production
   providers:
@@ -45,9 +52,14 @@ auth:
 catalog:
   # Overrides the default list locations from app-config.yaml
   # Refer to https://backstage.io/docs/features/software-catalog/#adding-components-to-the-catalog
+  #
+  # NOTE: In production, CWD is /app  This is different than development where
+  # CWD is ./packages/backend, As a result, entries cannot be copied verbatim
+  # from app-config.yaml otherwise they will not resolve to the correct location.
   locations:
     # Initial iam User and Group data is expected to be provided in the Secret.
+    # Local example data, file locations are relative to the backend process, typically `packages/backend`
     - type: file
-      target: ../../iam.yaml
+      target: /app/iam.yaml
       rules:
         - allow: [User, Group]
