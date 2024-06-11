@@ -18,6 +18,7 @@ Make the secret:
 kubectl create secret generic \
   --from-file=./app-config.yaml \
   --from-file=./app-config.production.yaml \
+  --from-file=./org.yaml \
   --dry-run=client \
   -o yaml \
   backstage-backend \

@@ -84,9 +84,9 @@ catalog:
       rules:
         - allow: [Template]
 
-    # Local example organizational data
+    # Local organizational data
     - type: file
-      target: ../../examples/org.yaml
+      target: ../../org.yaml
       rules:
         - allow: [User, Group]
 
