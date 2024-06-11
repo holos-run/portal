@@ -8,7 +8,7 @@ import {
   commonSignInResolvers,
   createProxyAuthProviderFactory,
 } from '@backstage/plugin-auth-node';
-import { oidcProxyAuthenticator } from './authenticator';
+import { createHolosProxyAuthenticator } from './authenticator';
 import { oidcProxySignInResolvers } from './resolvers';
 
 export const authModuleHolosProxyProvider = createBackendModule({
@@ -24,7 +24,7 @@ export const authModuleHolosProxyProvider = createBackendModule({
         providers.registerProvider({
           providerId: 'holosProxy',
           factory: createProxyAuthProviderFactory({
-            authenticator: oidcProxyAuthenticator,
+            authenticator: createHolosProxyAuthenticator(logger),
             signInResolverFactories: {
               ...oidcProxySignInResolvers,
               ...commonSignInResolvers,

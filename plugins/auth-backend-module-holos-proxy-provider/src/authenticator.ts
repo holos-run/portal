@@ -18,6 +18,7 @@ import { AuthenticationError } from '@backstage/errors';
 import { createProxyAuthenticator } from '@backstage/plugin-auth-node';
 import { createTokenValidator } from './helpers';
 import { OidcProxyResult } from './types';
+import { LoggerService } from '@backstage/backend-plugin-api';
 
 /**
  * DEFAULT_OIDC_ID_TOKEN_HEADER represents the default http request header used
@@ -25,36 +26,37 @@ import { OidcProxyResult } from './types';
  */
 const DEFAULT_OIDC_ID_TOKEN_HEADER = 'x-oidc-id-token';
 
-/** @public */
-export const oidcProxyAuthenticator = createProxyAuthenticator({
-  defaultProfileTransform: async (result: OidcProxyResult) => {
-    return { profile: { email: result.idToken.email } };
-  },
-  initialize({ config }) {
-    const iss = config.getString('issuer');
-    const aud = config.getString('audience');
-    const oidcIdTokenHeader =
-      config.getOptionalString('oidcIdTokenHeader') ??
-      DEFAULT_OIDC_ID_TOKEN_HEADER;
+export function createHolosProxyAuthenticator(logger: LoggerService) {
+  return createProxyAuthenticator({
+    defaultProfileTransform: async (result: OidcProxyResult) => {
+      return { profile: { email: result.idToken.email } };
+    },
+    initialize({ config }) {
+      const iss = config.getString('issuer');
+      const aud = config.getString('audience');
+      const oidcIdTokenHeader =
+        config.getOptionalString('oidcIdTokenHeader') ??
+        DEFAULT_OIDC_ID_TOKEN_HEADER;
 
-    const tokenValidator = createTokenValidator(iss, aud);
+      const tokenValidator = createTokenValidator(logger, iss, aud);
 
-    return { oidcIdTokenHeader, tokenValidator };
-  },
-  async authenticate({ req }, { oidcIdTokenHeader, tokenValidator }) {
-    const token = req.header(oidcIdTokenHeader);
+      return { oidcIdTokenHeader, tokenValidator };
+    },
+    async authenticate({ req }, { oidcIdTokenHeader, tokenValidator }) {
+      const token = req.header(oidcIdTokenHeader);
 
-    if (!token || typeof token !== 'string') {
-      throw new AuthenticationError(
-        `could not authenticate: missing header ${oidcIdTokenHeader}`,
-      );
-    }
+      if (!token || typeof token !== 'string') {
+        throw new AuthenticationError(
+          `could not authenticate: missing header ${oidcIdTokenHeader}`,
+        );
+      }
 
-    const idToken = await tokenValidator(token);
+      const idToken = await tokenValidator(token);
 
-    return {
-      result: { idToken },
-      providerInfo: { idToken },
-    };
-  },
-});
+      return {
+        result: { idToken },
+        providerInfo: { idToken },
+      };
+    },
+  })
+}
