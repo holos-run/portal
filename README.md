@@ -1,6 +1,7 @@
 # Holos Portal
 
-Build a deployable image:
+Build a deployable image.  Refer to [hack/deploy](./hack/deploy) for more
+details like how to create the secret and restart the deployment.
 
 ```sh
 # Build the backend
@@ -10,17 +11,4 @@ yarn build:backend --config ../../app-config.yaml
 # Build the image
 docker image build . -f packages/backend/Dockerfile --tag quay.io/holos-run/portal:latest
 docker push quay.io/holos-run/portal:latest
-```
-
-Make the secret:
-
-```sh
-kubectl create secret generic \
-  --from-file=./app-config.yaml \
-  --from-file=./app-config.production.yaml \
-  --from-file=./org.yaml \
-  --dry-run=client \
-  -o yaml \
-  backstage-backend \
-  | kubectl apply -f-
 ```

@@ -12,7 +12,7 @@ docker push quay.io/holos-run/portal:latest
 kubectl create secret generic \
   --from-file=./app-config.yaml \
   --from-file=./app-config.production.yaml \
-  --from-file=./org.yaml \
+  --from-file=./iam.yaml \
   --dry-run=client \
   -o yaml \
   backstage-backend \
