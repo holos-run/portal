@@ -39,6 +39,7 @@ auth:
       signIn:
         resolvers:
           - resolver: emailMatchingUserEntityProfileEmail
+          - resolver: signInWithoutCatalogUser
 
 
 catalog:

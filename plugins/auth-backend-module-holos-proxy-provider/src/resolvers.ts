@@ -18,6 +18,7 @@ import {
   createSignInResolverFactory,
   SignInInfo,
 } from '@backstage/plugin-auth-node';
+import { stringifyEntityRef, DEFAULT_NAMESPACE } from '@backstage/catalog-model';
 import { OidcProxyResult } from './types';
 
 /**
@@ -27,66 +28,54 @@ import { OidcProxyResult } from './types';
  */
 export namespace oidcProxySignInResolvers {
   /**
-   * Looks up the user by matching id token email claim to the
-   * `openid.net/email` annotation of the backstage entity.
-   *
-   * Note, email addresses may be reused by different identities over time
-   * within the scope of an issuer per the oidc specification.  Disable this
-   * resolver if identities must be guaranteed unique over time.
+   * singInWithoutCatalogUser signs the user in without requiring a pre-existing
+   * User entity in the catalog.  Refer to
+   * https://backstage.io/docs/auth/identity-resolver/#sign-in-without-users-in-the-catalog
    */
-  export const emailMatchingUserEntityAnnotation = createSignInResolverFactory({
+  export const signInWithoutCatalogUser = createSignInResolverFactory({
     create() {
-      return async (info: SignInInfo<OidcProxyResult>, ctx) => {
-        const email = info.result.idToken.email;
-
-        if (!email) {
+      return async ({ profile }, ctx) => {
+        if (!profile.email) {
           throw new Error(
             'could not sign in: oidc-proxy provider: missing email claim from id token',
           );
         }
 
-        return ctx.signInWithCatalogUser({
-          annotations: {
-            'openid.net/email': email,
-          },
+        const [localPart] = profile.email.split('@');
+
+        const userEntity = stringifyEntityRef({
+          kind: 'User',
+          name: localPart,
+          namespace: DEFAULT_NAMESPACE,
+        })
+
+        return ctx.issueToken({
+          claims: {
+            sub: userEntity,
+            ent: [userEntity],
+          }
         });
       };
     },
   });
 
-  /**
-   * Looks up the user by matching the id token iss + sub to the
-   * `openid.net/iss` and `openid.net/sub` annotations of the backstage entity.
-   *
-   * Note, this resolver method is the only method guaranteed by the oidc spec
-   * to result in a unique resolution of an id token to a backstage entity over
-   * time.  Email addresses may be reused within the scope of an issuer, subject
-   * identifier may not be reused.
-   */
-  export const idMatchingUserEntityAnnotation = createSignInResolverFactory({
+  export const emailMatchingUserEntityProfileEmail = createSignInResolverFactory({
     create() {
       return async (info: SignInInfo<OidcProxyResult>, ctx) => {
-        const iss = info.result.idToken.iss;
-        const sub = info.result.idToken.sub;
+        const { profile } = info;
 
-        if (!iss) {
+        if (!profile.email) {
           throw new Error(
-            'could not sign in: oidc-proxy provider: missing iss claim from id token',
-          );
-        }
-        if (!sub) {
-          throw new Error(
-            'could not sign in: oidc-proxy provider: missing sub claim from id token',
+            'could not sign in: emailMatchingUserEntityProfileEmail: missing profile email',
           );
         }
 
         return ctx.signInWithCatalogUser({
-          annotations: {
-            'openid.net/iss': iss,
-            'openid.net/sub': sub,
+          filter: {
+            'spec.profile.email': profile.email,
           },
         });
       };
-    },
-  });
+    }
+  })
 }

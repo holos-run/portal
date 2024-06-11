@@ -31,7 +31,7 @@ export const authModuleHolosProxyProvider = createBackendModule({
             },
           }),
         });
-        logger.info('auth backend-module holos-proxy-provider loaded');
+        logger.info('auth backend-module holos-proxy-provider initialized');
       },
     });
   },

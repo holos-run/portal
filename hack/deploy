@@ -1,0 +1,24 @@
+#! /bin/bash
+#
+
+set -xeuo pipefail
+
+yarn tsc
+yarn build:backend --config ../../app-config.yaml
+# Build the image
+docker image build . -f packages/backend/Dockerfile --tag quay.io/holos-run/portal:latest
+docker push quay.io/holos-run/portal:latest
+
+kubectl create secret generic \
+  --from-file=./app-config.yaml \
+  --from-file=./app-config.production.yaml \
+  --from-file=./org.yaml \
+  --dry-run=client \
+  -o yaml \
+  backstage-backend \
+  | kubectl apply -f-
+
+kubectl -n backstage rollout restart deployment backstage
+sleep 1
+kubectl -n backstage wait pod -l app.kubernetes.io/component=backstage-backend --for=jsonpath='{.status.phase}'=Running
+kubectl -n backstage logs -l app.kubernetes.io/component=backstage-backend -f --tail 30

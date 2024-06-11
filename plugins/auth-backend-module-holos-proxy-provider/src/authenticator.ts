@@ -15,7 +15,7 @@
  */
 
 import { AuthenticationError } from '@backstage/errors';
-import { createProxyAuthenticator } from '@backstage/plugin-auth-node';
+import { createProxyAuthenticator, ProfileInfo } from '@backstage/plugin-auth-node';
 import { createTokenValidator } from './helpers';
 import { OidcProxyResult } from './types';
 import { LoggerService } from '@backstage/backend-plugin-api';
@@ -29,7 +29,15 @@ const DEFAULT_OIDC_ID_TOKEN_HEADER = 'x-oidc-id-token';
 export function createHolosProxyAuthenticator(logger: LoggerService) {
   return createProxyAuthenticator({
     defaultProfileTransform: async (result: OidcProxyResult) => {
-      return { profile: { email: result.idToken.email } };
+      const profileInfo: ProfileInfo = { email: result.idToken.email };
+      if ('name' in result.idToken) {
+        profileInfo.displayName = result.idToken.name as string;
+      }
+      if ('picture' in result.idToken) {
+        profileInfo.picture = result.idToken.picture as string;
+      }
+      logger.debug(`holos profile transform: ${JSON.stringify(profileInfo)}`);
+      return { profile: profileInfo };
     },
     initialize({ config }) {
       const iss = config.getString('issuer');
