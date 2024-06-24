@@ -1,10 +1,9 @@
-# [Backstage](https://backstage.io)
+# Holos Portal
 
-This is your newly scaffolded Backstage App, Good Luck!
-
-To start the app, run:
+Build a deployable image.  Refer to [hack/deploy](./hack/deploy) for more
+details like how to create the secret and restart the deployment.
 
 ```sh
-yarn install
-yarn dev
+./hack/build
+./hack/deploy
 ```

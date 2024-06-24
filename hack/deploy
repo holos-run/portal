@@ -1,0 +1,18 @@
+#! /bin/bash
+#
+
+set -xeuo pipefail
+
+kubectl create secret generic \
+  --from-file=./app-config.yaml \
+  --from-file=./app-config.production.yaml \
+  --from-file=./iam.yaml \
+  --dry-run=client \
+  -o yaml \
+  backstage-backend \
+  | kubectl apply -f-
+
+kubectl -n backstage rollout restart deployment backstage
+sleep 1
+kubectl -n backstage wait pod -l app.kubernetes.io/component=backstage-backend --for=jsonpath='{.status.phase}'=Running
+kubectl -n backstage logs -l app.kubernetes.io/component=backstage-backend -f --tail 30

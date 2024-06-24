@@ -24,12 +24,38 @@ backend:
       ssl:
         ca: ${PGBOUNCER_CA_ROOT}
 
+  reading:
+    allow:
+      - host: 'holos.run'
+      - host: '*.holos.run'
+      - host: 'openinfrastructure.co'
+      - host: '*.openinfrastructure.co'
+
 auth:
+  environment: production
   providers:
     guest: null
+    holosProxy:
+      issuer: https://login.holos.run
+      audience: "269746002573969304"
+      oidcIdTokenHeader: "x-oidc-id-token"
+      signIn:
+        resolvers:
+          - resolver: emailMatchingUserEntityProfileEmail
+          - resolver: signInWithoutCatalogUser
+
 
 catalog:
-  # Overrides the default list locations from app-config.yaml as these contain example data.
-  # See https://backstage.io/docs/features/software-catalog/#adding-components-to-the-catalog for more details
-  # on how to get entities into the catalog.
-  locations: []
+  # Overrides the default list locations from app-config.yaml
+  # Refer to https://backstage.io/docs/features/software-catalog/#adding-components-to-the-catalog
+  #
+  # NOTE: In production, CWD is /app  This is different than development where
+  # CWD is ./packages/backend, As a result, entries cannot be copied verbatim
+  # from app-config.yaml otherwise they will not resolve to the correct location.
+  locations:
+    # Initial iam User and Group data is expected to be provided in the Secret.
+    # Local example data, file locations are relative to the backend process, typically `packages/backend`
+    - type: file
+      target: /app/iam.yaml
+      rules:
+        - allow: [User, Group]
