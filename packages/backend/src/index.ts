@@ -24,6 +24,8 @@ backend.add(import('@backstage/plugin-catalog-backend/alpha'));
 backend.add(
   import('@backstage/plugin-catalog-backend-module-scaffolder-entity-model'),
 );
+// github discovery - https://backstage.io/docs/integrations/github/discovery/
+backend.add(import('@backstage/plugin-catalog-backend-module-github/alpha'));
 
 // permission plugin
 backend.add(import('@backstage/plugin-permission-backend/alpha'));
@@ -35,5 +37,6 @@ backend.add(
 backend.add(import('@backstage/plugin-search-backend/alpha'));
 backend.add(import('@backstage/plugin-search-backend-module-catalog/alpha'));
 backend.add(import('@backstage/plugin-search-backend-module-techdocs/alpha'));
+
 
 backend.start();
